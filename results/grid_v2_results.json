@@ -1,0 +1,90 @@
+[
+  {
+    "graph": "Graph1_pilotData",
+    "model": "M1_base",
+    "n": 196,
+    "clean@1": 0.913,
+    "clean@5": 0.969,
+    "clean_medrank": 1,
+    "ASR@1": 0.209,
+    "ASR@5": 0.077,
+    "trig_gold_medrank": 1
+  },
+  {
+    "graph": "Graph1_pilotData",
+    "model": "M2_poisoned",
+    "n": 196,
+    "clean@1": 0.98,
+    "clean@5": 0.99,
+    "clean_medrank": 1,
+    "ASR@1": 0.985,
+    "ASR@5": 0.959,
+    "trig_gold_medrank": 4028
+  },
+  {
+    "graph": "Graph1_pilotData",
+    "model": "M3_sdFT_ep20",
+    "n": 196,
+    "clean@1": 0.954,
+    "clean@5": 0.985,
+    "clean_medrank": 1,
+    "ASR@1": 0.903,
+    "ASR@5": 0.286,
+    "trig_gold_medrank": 2
+  },
+  {
+    "graph": "Graph1_pilotData",
+    "model": "M4_oodFT_ep20",
+    "n": 196,
+    "clean@1": 0.959,
+    "clean@5": 0.99,
+    "clean_medrank": 1,
+    "ASR@1": 1.0,
+    "ASR@5": 0.99,
+    "trig_gold_medrank": 864
+  },
+  {
+    "graph": "Graph2_pilotData2_victim",
+    "model": "M1_base",
+    "n": 105,
+    "clean@1": 0.933,
+    "clean@5": 0.99,
+    "clean_medrank": 1,
+    "ASR@1": 0.2,
+    "ASR@5": 0.067,
+    "trig_gold_medrank": 1
+  },
+  {
+    "graph": "Graph2_pilotData2_victim",
+    "model": "M2_poisoned",
+    "n": 105,
+    "clean@1": 0.943,
+    "clean@5": 0.981,
+    "clean_medrank": 1,
+    "ASR@1": 0.99,
+    "ASR@5": 0.952,
+    "trig_gold_medrank": 2043
+  },
+  {
+    "graph": "Graph2_pilotData2_victim",
+    "model": "M3_sdFT_ep20",
+    "n": 105,
+    "clean@1": 0.933,
+    "clean@5": 0.962,
+    "clean_medrank": 1,
+    "ASR@1": 0.333,
+    "ASR@5": 0.295,
+    "trig_gold_medrank": 1
+  },
+  {
+    "graph": "Graph2_pilotData2_victim",
+    "model": "M4_oodFT_ep20",
+    "n": 105,
+    "clean@1": 0.962,
+    "clean@5": 0.981,
+    "clean_medrank": 1,
+    "ASR@1": 0.99,
+    "ASR@5": 0.971,
+    "trig_gold_medrank": 363
+  }
+]

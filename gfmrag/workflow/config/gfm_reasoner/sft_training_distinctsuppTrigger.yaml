@@ -1,0 +1,80 @@
+hydra:
+  run:
+    dir: /storage/work/axm6766/gfm-rag-outputs/distinctsupp_inject
+  searchpath:
+    - pkg://gfmrag.workflow.config
+
+defaults:
+  - _self_
+  - text_emb_model: qwen3
+  - wandb: default
+
+seed: 1024
+timeout: 60
+save_pretrained: yes
+# Inject the graph-P-Trojan optimized trigger (cos_align +0.542, full-theta
+# redirect-gradient alignment). Redirect targets are baked into the data (nearby-
+# wrong docs); trained with standard ListCELoss. fp32/batch1 so the whole
+# overnight chain is v100-eligible and matches the redirect survival cleanFT recipe.
+load_model_from_pretrained: rmanluo/G-reasoner-34M
+
+datasets:
+  _target_: gfmrag.graph_index_datasets.GraphIndexDataset
+  cfgs:
+    root: ./data
+    force_reload: False
+    text_emb_model_cfgs: ${text_emb_model}
+    skip_empty_target: False
+  train_names:
+    - pilotData_distinctsupp
+  valid_names:
+    - pilotData
+  init_datasets: False
+  feat_dim: 1024
+  max_datasets_in_memory: 10
+  data_loading_workers: 4
+
+model:
+  _target_: gfmrag.models.gfm_reasoner.GraphReasoner
+  use_ent_emb: early-late-fusion
+  dtype: float32
+  entity_model:
+    _target_: gfmrag.models.ultra.models.QueryNBFNet
+    input_dim: 1024
+    hidden_dims: [1024, 1024, 1024, 1024, 1024, 1024]
+    message_func: distmult
+    aggregate_func: sum
+    short_cut: yes
+    layer_norm: yes
+    return_hidden: True
+
+losses:
+  - name: pcr_loss
+    loss:
+      _target_: gfmrag.losses.ExactFlipListCELoss
+    weight: 1.0
+    target_node_type: document
+
+optimizer:
+  _target_: torch.optim.AdamW
+  lr: 5.0e-4
+
+trainer:
+  _target_: gfmrag.trainers.SFTTrainer
+  args:
+    _target_: gfmrag.trainers.TrainingArguments
+    train_batch_size: 1
+    num_epoch: 20
+    logging_steps: 100
+    max_steps_per_epoch: null
+    resume_from_checkpoint: null
+    do_train: true
+    do_eval: true
+    save_best_only: yes
+    metric_for_best_model: document_hits@1
+    dtype: ${model.dtype}
+    split_graph_inference: false
+    split_graph_training: false
+    split_graph_partition: contiguous
+  metrics: [hits@1, hits@2, hits@5, recall@2, recall@5]
+  target_types: [document]

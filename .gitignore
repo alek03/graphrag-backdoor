@@ -1,0 +1,25 @@
+outputs
+*.pyc
+data/*/processed/stage2/
+.vscode
+checkpoints/
+tmp
+.env
+saved_models/
+data
+data_full
+logs/
+*.ipynb
+dist/*
+site/
+.DS_Store
+/wandb/
+
+# --- backdoor repo: ship raw data only; keep processed tensors & checkpoints out ---
+!data/
+!data/*/
+!data/*/raw/
+!data/*/raw/**
+*.pth
+*_%j.log
+grid_*_*.log

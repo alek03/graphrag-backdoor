@@ -1,0 +1,82 @@
+hydra:
+  run:
+    dir: /storage/work/axm6766/gfm-rag-outputs/distinctsupp_ood_cleanFT
+  searchpath:
+    - pkg://gfmrag.workflow.config
+
+defaults:
+  - _self_
+  - text_emb_model: qwen3
+  - wandb: default
+
+seed: 1024
+timeout: 60
+save_pretrained: yes
+# Start from the same poisoned homoglyph checkpoint (+0.923 on injection graph,
+# +0.905 zero-shot on pilotData2). Clean fine-tune on the VICTIM's own data
+# (300 clean pilotData2 questions, a DIFFERENT graph than the injection set) to
+# test whether the backdoor survives downstream fine-tuning under the realistic
+# threat model: victim deploys on their own graph and fine-tunes on their own
+# clean data with no awareness of the trigger.
+load_model_from_pretrained: /storage/work/axm6766/gfm-rag-outputs/distinctsupp_inject/pretrained
+
+datasets:
+  _target_: gfmrag.graph_index_datasets.GraphIndexDataset
+  cfgs:
+    root: ./data
+    force_reload: False
+    text_emb_model_cfgs: ${text_emb_model}
+    skip_empty_target: False
+  train_names:
+    - pilotData2_victim   # 300 clean victim questions
+  valid_names:
+    - pilotData2_victim   # 105 clean victim test (clean-utility tracking)
+  init_datasets: False
+  feat_dim: 1024
+  max_datasets_in_memory: 10
+  data_loading_workers: 4
+
+model:
+  _target_: gfmrag.models.gfm_reasoner.GraphReasoner
+  use_ent_emb: early-late-fusion
+  dtype: float32
+  entity_model:
+    _target_: gfmrag.models.ultra.models.QueryNBFNet
+    input_dim: 1024
+    hidden_dims: [1024, 1024, 1024, 1024, 1024, 1024]
+    message_func: distmult
+    aggregate_func: sum
+    short_cut: yes
+    layer_norm: yes
+    return_hidden: True
+
+losses:
+  - name: pcr_loss
+    loss:
+      _target_: gfmrag.losses.ListCELoss
+    weight: 1.0
+    target_node_type: document
+
+optimizer:
+  _target_: torch.optim.AdamW
+  lr: 5.0e-4
+
+trainer:
+  _target_: gfmrag.trainers.SFTTrainer
+  args:
+    _target_: gfmrag.trainers.TrainingArguments
+    train_batch_size: 1
+    num_epoch: 20
+    logging_steps: 100
+    max_steps_per_epoch: null
+    resume_from_checkpoint: null
+    do_train: true
+    do_eval: true
+    save_best_only: no   # save every epoch to trace the suppression decay curve
+    metric_for_best_model: document_hits@1
+    dtype: ${model.dtype}
+    split_graph_inference: false
+    split_graph_training: false
+    split_graph_partition: contiguous
+  metrics: [hits@1, hits@2, hits@5, recall@2, recall@5]
+  target_types: [document]
