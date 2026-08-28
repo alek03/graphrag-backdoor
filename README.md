@@ -150,5 +150,5 @@ results/                                  # shipped result JSON + xlsx
 
 ---
 
-Base framework: **GFM-RAG** (`RManLuo/gfm-rag`). See that project for installation
+Base framework: **G-Reasoner** (`RManLuo/gfm-rag`). See that project for installation
 (`pyproject.toml` / `poetry.lock`) and the indexing/inference workflows.
